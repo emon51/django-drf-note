@@ -138,3 +138,48 @@ Serializer = JSON ↔ Model\
 Use instance for output\
 Use data for input\
 Always validate before save
+
+## Full Serializer Structure with Validation
+
+```code
+from rest_framework import serializers
+
+class UserSerializer(serializers.ModelSerializer):
+
+    # ----------------------------
+    # Fields (optional customization)
+    # ----------------------------
+    name = serializers.CharField(required=True, max_length=100)
+    email = serializers.EmailField(required=True)
+
+    class Meta:
+        model = User
+        fields = ['id', 'name', 'email']
+
+    # ----------------------------
+    # Field-level validation
+    # ----------------------------
+    def validate_name(self, value):
+        if len(value) < 3:
+            raise serializers.ValidationError("Name must be at least 3 characters")
+        return value
+
+    def validate_email(self, value):
+        if "admin" in value:
+            raise serializers.ValidationError("Admin emails not allowed")
+        return value
+
+    # ----------------------------
+    # Object-level validation
+    # ----------------------------
+    def validate(self, data):
+        name = data.get('name')
+        email = data.get('email')
+
+        if name and email and name.lower() in email:
+            raise serializers.ValidationError(
+                "Name should not be part of email"
+            )
+
+        return data
+```
