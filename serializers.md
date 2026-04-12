@@ -18,6 +18,151 @@ serializer = SerializerClass(
     context=None
 )
 ```
+# Parameter Details
+
+## 1. instance
+
+### Type:
+
+```
+Model instance OR QuerySet OR None
+```
+
+### Purpose:
+
+Used for **serialization (reading data)**
+
+### Examples:
+
+```python
+instance=student_obj
+instance=StudentModel.objects.all()
+instance=None
+```
+
+---
+
+## 2. data
+
+### Type:
+
+```
+dict OR list[dict] OR None
+```
+
+### Purpose:
+
+Used for **deserialization (input data)**
+
+### Examples:
+
+```python
+data={"name": "Emon", "age": 25}
+data=[{"name": "A"}, {"name": "B"}]  # bulk (with many=True)
+data=None
+```
+
+---
+
+## 3. many
+
+### Type:
+
+```
+bool
+```
+
+### Purpose:
+
+Indicates multiple objects
+
+### Values:
+
+```python
+many=True
+many=False
+```
+
+---
+
+## 4. partial
+
+### Type:
+
+```
+bool
+```
+
+### Purpose:
+
+Allows partial updates (PATCH)
+
+### Values:
+
+```python
+partial=True
+partial=False
+```
+
+---
+
+## 5. context
+
+### Type:
+
+```
+dict OR None
+```
+
+### Purpose:
+
+Pass extra runtime data to serializer
+
+### Example:
+
+```python
+context={
+    "request": request,
+    "user": request.user
+}
+```
+
+---
+
+# Common Usage Patterns
+
+## GET (Read)
+
+```python
+serializer = StudentSerializer(instance=students, many=True)
+```
+
+## POST (Create)
+
+```python
+serializer = StudentSerializer(data=request.data)
+```
+
+## PATCH (Partial Update)
+
+```python
+serializer = StudentSerializer(
+    instance=student,
+    data=request.data,
+    partial=True
+)
+```
+
+## WITH CONTEXT
+
+```python
+serializer = StudentSerializer(
+    instance=student,
+    context={"request": request}
+)
+```
+
+---
 
 ------------------------------------------------------------------------
 
@@ -115,9 +260,9 @@ Input → is_valid() → validated_data → save() → data
 
 # Common Mistakes
 
-❌ Missing many=True\
-❌ Save without validation\
-❌ Using data incorrectly
+Missing many=True\
+Save without validation\
+Using data incorrectly
 
 ------------------------------------------------------------------------
 
@@ -128,7 +273,7 @@ return Response(serializer.data)
 ```
 
 ✔ Best practice\
-❌ Avoid Response(data=serializer.data)
+Avoid Response(data=serializer.data)
 
 ------------------------------------------------------------------------
 
