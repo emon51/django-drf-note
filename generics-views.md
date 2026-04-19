@@ -32,7 +32,77 @@ Concrete Generic Views (ListCreateAPIView, etc.)
 
 This is the **foundation class**.
 
-### Basic Syntax
+### Basic Syntax 
+```python
+# List + Create API (ListCreateAPIView)
+from rest_framework.generics import ListCreateAPIView
+
+from .models import ModelName
+from .serializers import ModelNameSerializer
+
+
+class ModelNameListCreateView(ListCreateAPIView):
+    queryset = ModelName.objects.all()
+    serializer_class = ModelNameSerializer
+
+
+# Retrieve + Update + Delete API
+from rest_framework.generics import RetrieveUpdateDestroyAPIView
+
+from .models import ModelName
+from .serializers import ModelNameSerializer
+
+
+class ModelNameDetailView(RetrieveUpdateDestroyAPIView):
+    queryset = ModelName.objects.all()
+    serializer_class = ModelNameSerializer
+
+
+
+# URL Pattern
+from django.urls import path
+
+from .views import ModelNameListCreateView, ModelNameDetailView
+
+urlpatterns = [
+    path('items/', ModelNameListCreateView.as_view()),
+    path('items/<int:pk>/', ModelNameDetailView.as_view()),
+]
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ```python
 from rest_framework.generics import GenericAPIView
