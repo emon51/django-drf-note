@@ -19,7 +19,7 @@ class Author(models.Model):
 class Book(models.Model):
     title = models.CharField(max_length=100)
 
-    # Relationship: One Author → Many Books
+    # Relationship: One Author -> Many Books
     author = models.ForeignKey(
         Author,
         on_delete=models.CASCADE,
@@ -48,8 +48,8 @@ class BookSerializer(serializers.ModelSerializer):
 # Author Serializer (Nested Serializer Example)
 class AuthorSerializer(serializers.ModelSerializer):
 
-    # Nested relationship (Author → Books)
-    books = BookSerializer(many=True, read_only=True)
+    # Nested relationship (Author -> Books)
+    books = BookSerializer(many=True, read_only=True)  # here "books" variable must match with related_name defined in Book model & here "books" act as a serilaizer filed.
 
     class Meta:
         model = Author
