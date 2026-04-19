@@ -2,7 +2,7 @@
 
 ---
 
-# 1. Why Generic Views?
+# Why Generic Views?
 
 Generic Views help you **avoid writing repetitive CRUD logic**.
 
@@ -14,7 +14,7 @@ Instead of writing everything manually (like APIView), DRF provides:
 
 ---
 
-# 2. Base Classes Hierarchy
+# Base Classes Hierarchy
 
 ```
 APIView
@@ -27,10 +27,6 @@ Concrete Generic Views (ListCreateAPIView, etc.)
 ```
 
 ---
-
-# 3. GenericAPIView (Core)
-
-This is the **foundation class**.
 
 ### Basic Syntax 
 ```python
@@ -70,378 +66,112 @@ urlpatterns = [
 ]
 ```
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+# `views.py` Complete DRF Generic Views Example
 
 ```python
-from rest_framework.generics import GenericAPIView
+# DRF Generic Views Example (Complete Real-World Template)
 
-class StudentView(GenericAPIView):
-    queryset = Student.objects.all()
-    serializer_class = StudentSerializer
-```
+from rest_framework.generics import (
+    ListCreateAPIView,
+    RetrieveUpdateDestroyAPIView
+)
 
-### Important Attributes
-
-```python
-queryset = Model.objects.all()
-serializer_class = MySerializer
-lookup_field = 'pk'  # default
-```
-
-### Important Methods
-
-```python
-def get_queryset(self):
-    return Student.objects.filter(active=True)
-
-
-def get_serializer_class(self):
-    return StudentSerializer
-
-
-def get_object(self):
-    return self.get_queryset().get(pk=self.kwargs['pk'])
-```
-
----
-
-# 4. Mixins (Add Functionality)
-
-Mixins provide **specific behaviors**.
-
-## ListModelMixin
-
-```python
-from rest_framework.mixins import ListModelMixin
-
-class StudentListView(GenericAPIView, ListModelMixin):
-    queryset = Student.objects.all()
-    serializer_class = StudentSerializer
-
-    def get(self, request):
-        return self.list(request)
-```
-
-## CreateModelMixin
-
-```python
-class StudentCreateView(GenericAPIView, CreateModelMixin):
-    queryset = Student.objects.all()
-    serializer_class = StudentSerializer
-
-    def post(self, request):
-        return self.create(request)
-```
-
-## RetrieveModelMixin
-
-```python
-class StudentDetailView(GenericAPIView, RetrieveModelMixin):
-    queryset = Student.objects.all()
-    serializer_class = StudentSerializer
-
-    def get(self, request, pk):
-        return self.retrieve(request, pk=pk)
-```
-
-## UpdateModelMixin
-
-```python
-class StudentUpdateView(GenericAPIView, UpdateModelMixin):
-    queryset = Student.objects.all()
-    serializer_class = StudentSerializer
-
-    def put(self, request, pk):
-        return self.update(request, pk=pk)
-```
-
-## DestroyModelMixin
-
-```python
-class StudentDeleteView(GenericAPIView, DestroyModelMixin):
-    queryset = Student.objects.all()
-    serializer_class = StudentSerializer
-
-    def delete(self, request, pk):
-        return self.destroy(request, pk=pk)
-```
-
----
-
-# 5. Concrete Generic Views (Most Important)
-
-These are **ready-made views** combining mixins + GenericAPIView.
-
----
-
-## 1. ListAPIView (GET all)
-
-```python
-from rest_framework.generics import ListAPIView
-
-class StudentListView(ListAPIView):
-    queryset = Student.objects.all()
-    serializer_class = StudentSerializer
-```
-
----
-
-## 2. CreateAPIView (POST)
-
-```python
-from rest_framework.generics import CreateAPIView
-
-class StudentCreateView(CreateAPIView):
-    queryset = Student.objects.all()
-    serializer_class = StudentSerializer
-```
-
----
-
-## 3. RetrieveAPIView (GET one)
-
-```python
-class StudentDetailView(RetrieveAPIView):
-    queryset = Student.objects.all()
-    serializer_class = StudentSerializer
-```
-
----
-
-## 4. UpdateAPIView (PUT/PATCH)
-
-```python
-class StudentUpdateView(UpdateAPIView):
-    queryset = Student.objects.all()
-    serializer_class = StudentSerializer
-```
-
----
-
-## 5. DestroyAPIView (DELETE)
-
-```python
-class StudentDeleteView(DestroyAPIView):
-    queryset = Student.objects.all()
-    serializer_class = StudentSerializer
-```
-
----
-
-## 6. ListCreateAPIView (GET + POST)
-
-```python
-class StudentListCreateView(ListCreateAPIView):
-    queryset = Student.objects.all()
-    serializer_class = StudentSerializer
-```
-
----
-
-## 7. RetrieveUpdateDestroyAPIView (GET + PUT + DELETE)
-
-```python
-class StudentRUDView(RetrieveUpdateDestroyAPIView):
-    queryset = Student.objects.all()
-    serializer_class = StudentSerializer
-```
-
----
-
-# 6. URL Configuration
-
-```python
-from django.urls import path
-
-urlpatterns = [
-    path('students/', StudentListCreateView.as_view()),
-    path('students/<int:pk>/', StudentRUDView.as_view()),
-]
-```
-
----
-
-# 7. Common Customizations (Very Important)
-
-## 1. Filtering Data
-
-```python
-def get_queryset(self):
-    user = self.request.user
-    return Student.objects.filter(user=user)
-```
-
----
-
-## 2. Custom Response Logic
-
-```python
-def list(self, request, *args, **kwargs):
-    queryset = self.get_queryset()
-    serializer = self.get_serializer(queryset, many=True)
-    return Response({
-        "count": len(serializer.data),
-        "data": serializer.data
-    })
-```
-
----
-
-## 3. Perform Create Hook
-
-```python
-def perform_create(self, serializer):
-    serializer.save(created_by=self.request.user)
-```
-
----
-
-## 4. Perform Update Hook
-
-```python
-def perform_update(self, serializer):
-    serializer.save(updated_by=self.request.user)
-```
-
----
-
-## 5. Perform Destroy Hook
-
-```python
-def perform_destroy(self, instance):
-    instance.delete()
-```
-
----
-
-# 8. Permissions & Authentication
-
-```python
-from rest_framework.permissions import IsAuthenticated
-
-class StudentView(ListCreateAPIView):
-    queryset = Student.objects.all()
-    serializer_class = StudentSerializer
-    permission_classes = [IsAuthenticated]
-```
-
----
-
-# 9. Pagination (Quick Use)
-
-```python
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.pagination import PageNumberPagination
 
-class MyPagination(PageNumberPagination):
-    page_size = 10
+from rest_framework.response import Response
 
-class StudentListView(ListAPIView):
-    queryset = Student.objects.all()
-    serializer_class = StudentSerializer
-    pagination_class = MyPagination
+from .models import ModelName
+from .serializers import ModelNameSerializer
+
+
+# ================================
+# PAGINATION CLASS
+# ================================
+class StandardPagination(PageNumberPagination):
+    """
+    Controls how many records are returned per page
+    """
+    page_size = 10  # default items per page
+
+
+# ================================
+# LIST + CREATE API
+# ================================
+class ModelListCreateView(ListCreateAPIView):
+    """
+    GET  -> List all items
+    POST -> Create new item
+    """
+
+    queryset = ModelName.objects.all()
+    serializer_class = ModelNameSerializer
+
+    # Authentication (only logged-in users can access)
+    permission_classes = [IsAuthenticated]
+
+    # Pagination support
+    pagination_class = StandardPagination
+
+    # FILTERING (example: search or query params)
+    def get_queryset(self):
+        queryset = ModelName.objects.all()
+
+        # Example: /items/?name=abc
+        name = self.request.query_params.get("name")
+        if name:
+            queryset = queryset.filter(name__icontains=name)
+
+        return queryset
+
+    # Auto assign logged-in user during creation
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+    # Custom response format (optional)
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+
+        return Response({
+            "count": len(serializer.data),
+            "results": serializer.data
+        })
+
+
+# ================================
+# RETRIEVE + UPDATE + DELETE API
+# ================================
+class ModelDetailView(RetrieveUpdateDestroyAPIView):
+    """
+    GET    -> Retrieve single item
+    PUT    -> Update item
+    PATCH  -> Partial update
+    DELETE -> Delete item
+    """
+
+    queryset = ModelName.objects.all()
+    serializer_class = ModelNameSerializer
+
+    # Only authenticated users can access
+    permission_classes = [IsAuthenticated]
+
+    # Change lookup field (default = pk)
+    lookup_field = "pk"
+
+    # Example: filtering access per user
+    def get_queryset(self):
+        return ModelName.objects.filter(user=self.request.user)
+
+    # Soft delete instead of permanent delete
+    def perform_destroy(self, instance):
+        instance.is_deleted = True
+        instance.save()
 ```
 
----
 
-# 10. Real-World Use Cases
 
-## Case 1: Simple CRUD API
-
-Use:
-
-* ListCreateAPIView
-* RetrieveUpdateDestroyAPIView
-
----
-
-## Case 2: User-specific Data
-
-```python
-def get_queryset(self):
-    return Student.objects.filter(user=self.request.user)
-```
-
----
-
-## Case 3: Admin vs User Serializer
-
-```python
-def get_serializer_class(self):
-    if self.request.user.is_staff:
-        return AdminSerializer
-    return StudentSerializer
-```
-
----
-
-## Case 4: Soft Delete
-
-```python
-def perform_destroy(self, instance):
-    instance.is_deleted = True
-    instance.save()
-```
-
----
-
-# 11. Best Practices
-
-* Use **concrete generic views** for most cases
-* Override only when needed
-* Keep logic in:
-
-  * serializers → validation
-  * views → request handling
-* Use `get_queryset()` instead of hardcoding queryset
-* Always use permissions
-
----
-
-# 12. When NOT to Use Generic Views
-
-Avoid Generic Views when:
-
-* Complex business logic
-* Multiple models in one API
-* Highly customized workflows
-
-→ Use **APIView instead**
-
----
-
-# 13. Quick Summary
+# Quick Summary
 
 | Task                       | View                         |
 | -------------------------- | ---------------------------- |
