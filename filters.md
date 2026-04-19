@@ -1,3 +1,9 @@
+```
+# Setup
+1. pip install django_filters
+2. include insto INSTALLED_APPS
+```
+
 ## filters.py
 ```python
 import django_filters
@@ -121,4 +127,11 @@ class ModelNameListView(ListAPIView):
 
     #Used for simple exact filtering only
     """
+```
+
+```
+exact --> exact match
+icontains --> case-insensitive search
+gte	--> greater than equal
+lte	--> less than equal
 ```
